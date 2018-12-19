@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    var server = "http://127.0.0.1:5000/"
+    var server = "http://192.168.1.8:5000/";
 
     document.addEventListener('init', function (event) {
         var page = event.target;
@@ -24,8 +24,6 @@ $(document).ready(function () {
 
             if(username!==""&&password!==""){
                 $.ajax({
-                    //url: "https://api.mlab.com/api/1/databases/ball/collections/User?apiKey=zZBSGIydXaai821m_HybLVGYFegwEFTh&fo=true",
-                    //url: server+"login?username="+username+"&password="+password,
                     url: server+"login",
                     type: "POST",
                     data: JSON.stringify({
@@ -35,8 +33,12 @@ $(document).ready(function () {
                     dataType: "json",
                     contentType: "application/json; charset=utf-8",
                     success: function (response) {
-                        alert("success");
                         console.log(response);
+                        if(response.Login){
+                            window.location.href="html/Lobby.html";
+                        } else {
+                            $("#loginError").text("incorrect username or password");
+                        }
                     },
                     error: function (e) {
                         alert("fail");
@@ -44,7 +46,7 @@ $(document).ready(function () {
                     }
                 });
             } else {
-                alert("incomplete");
+                alert("Please complete the fields");
             }
         }
 
@@ -54,7 +56,6 @@ $(document).ready(function () {
 
             if(username!==""&&password!==""){
                 $.ajax({
-                    //url: "https://api.mlab.com/api/1/databases/ball/collections/User?apiKey=zZBSGIydXaai821m_HybLVGYFegwEFTh",
                     url: server+"register",
                     data: JSON.stringify({
                         "username": username,
@@ -73,7 +74,7 @@ $(document).ready(function () {
                     }
                 });
             } else {
-                alert("incomplete");
+                alert("Please complete the fields");
             }
 
         };
