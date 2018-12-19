@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>丢个球啊</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+
+    <script src="lib/onsen/js/onsenui.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/controllers.js"></script>
+    <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="js/myJS.js"></script>
+
+    <link rel="stylesheet" href="lib/onsen/css/onsenui.css">
+    <link rel="stylesheet" href="lib/onsen/css/onsen-css-components.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/myStyle.css">
+
+</head>
+
+<body>
+<ons-navigator swipeable id="myNavigator" page="login.html"></ons-navigator>
+<template id="login.html">
+    <ons-page id="loginPage">
+        <ons-toolbar>
+            <div class="center">Login</div>
+        </ons-toolbar>
+        <ons-card>
+            <div class="cardLayout">
+                <p class="pHeight">
+                    <label>Username:&nbsp&nbsp</label>
+                    <ons-input id="usernameLogin" modifier="underbar" placeholder="Username" float></ons-input>
+                </p>
+                <p class="pHeight">
+                    <label>Password:&nbsp&nbsp</label>
+                    <ons-input id="passwordLogin" modifier="underbar" type="password" placeholder="Password" float></ons-input>
+                </p>
+                <p class="btnMarginTop">
+                    <ons-button id="loginBtn" style="margin-right: 50px;">Sign in</ons-button>
+                    <ons-button id="signUpBtn">Sign up</ons-button>
+                </p>
+            </div>
+        </ons-card>
+    </ons-page>
+</template>
+
+<template id="register.html">
+    <ons-page id="registerPage">
+        <ons-toolbar>
+            <div class="left">
+                <ons-back-button>Back</ons-back-button>
+            </div>
+            <div class="center">Register</div>
+        </ons-toolbar>
+        <ons-card>
+            <div class="cardLayout">
+                <p class="pHeight">
+                    <label>Username:&nbsp&nbsp</label>
+                    <ons-input id="usernameRegister" modifier="underbar" placeholder="Username" float></ons-input>
+                </p>
+                <p class="pHeight">
+                    <label>Password:&nbsp&nbsp</label>
+                    <ons-input id="passwordRegister" modifier="underbar" type="password" placeholder="Password" float></ons-input>
+                </p>
+                <p class="btnMarginTop">
+                    <ons-button id="registerBtn">Sign up</ons-button>
+                </p>
+            </div>
+        </ons-card>
+    </ons-page>
+</template>
+
+</body>
+
+</html>
