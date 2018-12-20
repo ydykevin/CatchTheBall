@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>丢个球啊</title>
+    <title>丢个球啊-大厅</title>
 
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -12,8 +12,9 @@
     <script src="../js/app.js"></script>
     <script src="../js/services.js"></script>
     <script src="../js/controllers.js"></script>
+    <script src="../js/socket.io.min.js"></script>
     <script type="text/javascript" src="../js/jquery-1.9.1.min.js"></script>
-    <script type="text/javascript" src="../js/myJS.js"></script>
+    <script type="text/javascript" src="../js/lobby.js"></script>
 
     <link rel="stylesheet" href="../lib/onsen/css/onsenui.css">
     <link rel="stylesheet" href="../lib/onsen/css/onsen-css-components.css">
@@ -21,15 +22,37 @@
     <link rel="stylesheet" href="../css/myStyle.css">
 </head>
 <body>
-<ons-page>
+<ons-splitter>
+    <ons-splitter-side id="menu" side="left" width="220px" collapse swipeable>
+        <ons-page>
+            <ons-list>
+                <ons-list-item  id="createRoomBtn" tappable>
+                    Create Room
+                </ons-list-item>
+                <ons-list-item  id="findRoomBtn" tappable>
+                    Find Room
+                </ons-list-item>
+                <ons-list-item  id="signOutBtn" tappable>
+                    Sign Out
+                </ons-list-item>
+            </ons-list>
+        </ons-page>
+    </ons-splitter-side>
+    <ons-splitter-content id="content" page="lobby.html"></ons-splitter-content>
+</ons-splitter>
+<template id="lobby.html">
+<ons-page id="lobbyPage">
     <ons-toolbar>
+        <div class="left">
+            <ons-toolbar-button onclick="fn.open()">
+                <ons-icon icon="md-menu"></ons-icon>
+            </ons-toolbar-button>
+        </div>
         <div class="center">Lobby</div>
     </ons-toolbar>
-    <ons-card>
-        <div class="cardLayout">
-
-        </div>
-    </ons-card>
+    <div id="roomList" class="cardLayout">No room</div>
 </ons-page>
+</template>
+
 </body>
 </html>

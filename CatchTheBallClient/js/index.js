@@ -34,8 +34,9 @@ $(document).ready(function () {
                     contentType: "application/json; charset=utf-8",
                     success: function (response) {
                         console.log(response);
-                        if(response.Login){
-                            window.location.href="html/Lobby.html";
+                        if(response.login){
+                            window.localStorage.setItem("username",username);
+                            window.location.href="html/lobby.html";
                         } else {
                             $("#loginError").text("incorrect username or password");
                         }
@@ -65,8 +66,13 @@ $(document).ready(function () {
                     dataType: "json",
                     contentType: "application/json; charset=utf-8",
                     success: function (response) {
-                        alert("success");
                         console.log(response);
+                        if(response.register){
+                            window.localStorage.setItem("username",username);
+                            window.location.href="html/lobby.html";
+                        } else {
+                            $("#registerError").text("username existed");
+                        }
                     },
                     error: function (e) {
                         alert("fail");

@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 from flask_restplus import Resource, Api, reqparse, cors, fields
 from flask_socketio import SocketIO, emit, send, join_room, leave_room, disconnect
-import DB
+from DB import MongoDB, User, Room
 
 app = Flask(__name__)
 api = Api(app, default='CatchTheBall', default_label='Server')
@@ -19,7 +19,7 @@ form = api.model('form', {
 
 class Database:
     def __init__(self):
-        self.mdb = DB.MongoDB()
+        self.mdb = MongoDB()
 
 
 db = Database();
@@ -34,12 +34,12 @@ class Login(Resource):
         username = parser.parse_args()['username']
         password = parser.parse_args()['password']
         if username and password:
-            if db.mdb.findUser({"username":username,"password":password}):
-                return (jsonify({"Login": True}), 200)
+            if db.mdb.find_user({"username":username,"password":password}):
+                return jsonify({"login": True}), 200
             else:
-                return (jsonify({"Login": False}), 200)
+                return jsonify({"login": False}), 200
         else:
-            return (jsonify({"Login": False}), 400)
+            return jsonify({"login": False}), 400
 
     @cors.crossdomain(origin='*', headers=['content-type'])
     def options(self):
@@ -55,25 +55,74 @@ class Register(Resource):
         username = parser.parse_args()['username']
         password = parser.parse_args()['password']
         if username and password:
-            if db.mdb.findUser({"username":username,"password":password}):
-                return (jsonify({"Register": False}), 200)
+            if db.mdb.find_user({"username":username}):
+                return jsonify({"register": False}), 200
             else:
-                user = dict()
-                user['username'] = username
-                user['password'] = password
-                db.mdb.insertUser(user)
-                return (jsonify({"Register": True}), 200)
+                # user = dict()
+                # user['username'] = username
+                # user['password'] = password
+                # db.mdb.insertUser(user)
+                user = User(username, password)
+                user.save()
+                return jsonify({"register": True}), 200
         else:
-            return (jsonify({"Register": False}), 400)
+            return jsonify({"register": False}), 400
 
     @cors.crossdomain(origin='*', headers=['content-type'])
     def options(self):
         return {}, 200
 
 
-@socketio.on('connect', namespace='/chat')
-def test_connect():
-    emit('my response', {'data': 'Connected'})
+@socketio.on('connect')
+def connect():
+    emit('message', {'data': 'Connected'})
+    print('connected')
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected '+request.sid)
+    #delete room and broadcast all rooms
+    num = 0
+    for r in Room.objects():
+        userList = r['userList']
+        for user in r['userList']:
+            if request.sid == user['sid']:
+                userList.remove(user)
+                if not userList:
+                    db.mdb.delete_room({"roomID":r['roomID']})
+                    print("removed room")
+                    print(request.sid)
+                    break
+                else:
+                    r.update(userList=userList)
+                    print("removed user")
+                    print(request.sid)
+
+
+
+@socketio.on('create_room')
+def create_room(args):
+    print('create_room: ' + args)
+    event = json.loads(args)
+    roomID = 1
+    while db.mdb.find_room({"roomID": roomID}):
+        roomID = roomID + 1
+    userList = [{"username":event['username'],"sid":request.sid}]
+    newRoom = Room(roomID,userList)
+    newRoom.save()
+    roomList(True)
+
+
+@socketio.on('roomList')
+def roomList(broadcast):
+    print(broadcast)
+    roomList = list()
+    for r in db.mdb.get_collection('room').find():
+        room = dict()
+        room['roomID'] = r['roomID']
+        room['userList'] = r['userList']
+        roomList.append(room)
+    emit('roomList', roomList, broadcast=broadcast)
 
 
 if __name__ == '__main__':
