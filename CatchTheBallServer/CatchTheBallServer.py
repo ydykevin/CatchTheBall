@@ -75,8 +75,8 @@ class Register(Resource):
 
 @socketio.on('connect')
 def connect():
-    emit('message', {'data': 'Connected'})
-    print('connected')
+    #emit('message', {'data': 'Connected'})
+    print('connected ' + request.sid)
 
 @socketio.on('disconnect')
 def test_disconnect():
@@ -99,23 +99,41 @@ def test_disconnect():
                     print(request.sid)
 
 
+@socketio.on('doDisconnect')
+def doDisconnect():
+    disconnect(sid=request.sid)
 
 @socketio.on('create_room')
 def create_room(args):
     print('create_room: ' + args)
-    event = json.loads(args)
+    data = json.loads(args)
     roomID = 1
     while db.mdb.find_room({"roomID": roomID}):
         roomID = roomID + 1
-    userList = [{"username":event['username'],"sid":request.sid}]
+    userList = [{"username":data['username'],"sid":request.sid}]
     newRoom = Room(roomID,userList)
     newRoom.save()
     roomList(True)
 
 
+@socketio.on('join_room')
+def join_room(args):
+    print('join: ' + args + " "+request.sid)
+    data = json.loads(args)
+    for r in Room.objects():
+        if r['roomID'] == data['roomID']:
+            #print(r)
+            userList = r['userList']
+            userList.append({"username":data['username'],"sid":request.sid})
+            r.update(userList=userList)
+            roomInfo(data['roomID'])
+            roomList(True)
+            break
+
+
 @socketio.on('roomList')
 def roomList(broadcast):
-    print(broadcast)
+    #print(broadcast)
     roomList = list()
     for r in db.mdb.get_collection('room').find():
         room = dict()
@@ -123,6 +141,20 @@ def roomList(broadcast):
         room['userList'] = r['userList']
         roomList.append(room)
     emit('roomList', roomList, broadcast=broadcast)
+
+
+@socketio.on('roomInfo')
+def roomInfo(roomID):
+    print("find roominfo: ",roomID)
+    r = db.mdb.find_room({"roomID": roomID})
+    #print(r['roomID'])
+    #print(r['userList'])
+    d = dict()
+    d['roomID'] = r['roomID']
+    d['userList'] = r['userList']
+    roomInfo = list()
+    roomInfo.append(d)
+    emit('roomInfo', roomInfo)
 
 
 if __name__ == '__main__':

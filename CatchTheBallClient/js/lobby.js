@@ -6,37 +6,25 @@ $(document).ready(function () {
         var page = event.target;
 
         if (page.id === 'lobbyPage') {
-            var socket = io.connect(server);
 
             if (!window.localStorage.getItem("username")) {
                 window.location.href = "../index.html";
             }
 
+            var socket = io.connect(server);
+
             $("#signOutBtn").click(function () {
                 window.localStorage.clear();
+                socket.emit('doDisconnect');
                 window.location.href = "../index.html";
             });
 
             $("#createRoomBtn").click(function () {
-                socket.disconnect();
-                window.location.href = "game.html";
+                socket.emit('doDisconnect');
+                window.location.href = "room.html";
             });
 
-            //setInterval(function(){
-            //socket.emit('event', JSON.stringify({"setSidByUsername": window.localStorage.getItem("username")}));
-            //},1000);
-            //socket.emit('event',JSON.stringify({"broadcast":"broadcast"}));
-
-            // socket.on('disconnect',function(message){
-            //     window.location.href="../index.html";
-            // });
-
-            // $.getJSON('https://api.ipify.org?format=jsonp&callback=?', function(data) {
-            //     console.log(JSON.stringify(data, null, 2));
-            //     alert(JSON.stringify(data, null, 2));
-            // });
-
-            socket.emit('roomList', JSON.stringify(false))
+            socket.emit('roomList', JSON.stringify(false));
             socket.on('roomList', function (message) {
                 console.log(message);
                 if(message.length==0) {
@@ -44,13 +32,14 @@ $(document).ready(function () {
                 } else {
                     $("#roomList").empty();
                     for (var i = 0; i < message.length; i++) {
-                        $("#roomList").append('<ons-card><div style="display: inline">Room ID: '+message[i].roomID+'</div><div style="display: inline;float: right">Player: '+message[i].userList.length+'</div></ons-card>');
+                        var roomID = message[i].roomID;
+                        $("#roomList").append('<ons-card id="card'+roomID+'"><div><div style="display: inline">Room ID: '+roomID+'</div><div style="display: inline;float: right">Player: '+message[i].userList.length+'</div></div></ons-card>');
+                        $("#card"+roomID).on('click', function(){
+                            socket.emit('doDisconnect');
+                            window.location.href = "room.html?roomID="+roomID;
+                        });
                     }
                 }
-                // if(message.other) {
-                //     alert("Your account is logged in from other place");
-                // }
-
             });
 
             window.fn = {};
@@ -59,10 +48,6 @@ $(document).ready(function () {
                 var menu = document.getElementById('menu');
                 menu.open();
             };
-
-            // setTimeout(function(){
-            //     socket.disconnect();
-            // },5000);
 
         }
     });
