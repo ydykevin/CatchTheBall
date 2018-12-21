@@ -1,7 +1,5 @@
 $(document).ready(function () {
 
-    var server = "http://192.168.1.8:5000/";
-
     document.addEventListener('init', function (event) {
         var page = event.target;
 

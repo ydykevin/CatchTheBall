@@ -33,19 +33,21 @@ class MongoDB:
 class User(Document):
     username = StringField(required=True)
     password = StringField(required=True)
-    #sid = StringField()
+    sid = StringField()
+    roomID = IntField()
 
     def __init__(self, username, password, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.username = username
         self.password = password
-        #self.sid = ""
 
-    def get_username(self):
-        return self.username
 
-    def get_password(self):
-        return self.password
+
+    # def get_username(self):
+    #     return self.username
+    #
+    # def get_password(self):
+    #     return self.password
 
     # def get_sid(self):
     #     return self.sid

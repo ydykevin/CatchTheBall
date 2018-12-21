@@ -4,8 +4,6 @@ $(document).ready(function () {
         window.location.href="../index.html";
     }
 
-    var server = "http://192.168.1.8:5000/";
-
     var socket = io.connect(server);
 
     function getUrlVars()
@@ -36,7 +34,7 @@ $(document).ready(function () {
     });
 
     socket.on('roomInfo',function(message){
-        console.log(message);
+        console.log(JSON.parse(message));
     });
 
 });

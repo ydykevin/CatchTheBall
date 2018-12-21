@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, json
+from bson import json_util
 from flask_restplus import Resource, Api, reqparse, cors, fields
 from flask_socketio import SocketIO, emit, send, join_room, leave_room, disconnect
 from DB import MongoDB, User, Room
@@ -73,10 +74,24 @@ class Register(Resource):
         return {}, 200
 
 
+@api.route('/room')
+@api.expect(form, validate=True)
+class Register(Resource):
+    @cors.crossdomain(origin='*', headers=['content-type'])
+    def get(self):
+        data = [json.dumps(item, default=json_util.default) for item in db.mdb.get_collection('room').find()]
+        return jsonify(data=data), 200
+
+    @cors.crossdomain(origin='*', headers=['content-type'])
+    def options(self):
+        return {}, 200
+
+
 @socketio.on('connect')
 def connect():
     #emit('message', {'data': 'Connected'})
     print('connected ' + request.sid)
+
 
 @socketio.on('disconnect')
 def test_disconnect():
@@ -103,6 +118,7 @@ def test_disconnect():
 def doDisconnect():
     disconnect(sid=request.sid)
 
+
 @socketio.on('create_room')
 def create_room(args):
     print('create_room: ' + args)
@@ -113,7 +129,12 @@ def create_room(args):
     userList = [{"username":data['username'],"sid":request.sid}]
     newRoom = Room(roomID,userList)
     newRoom.save()
-    roomList(True)
+    roomInfo(roomID)
+    for user in User.objects(username=data['username']):
+        if user.sid:
+            disconnect(user.sid)
+        user.update(sid=request.sid,roomID=roomID)
+    #roomList(True)
 
 
 @socketio.on('join_room')
@@ -122,39 +143,31 @@ def join_room(args):
     data = json.loads(args)
     for r in Room.objects():
         if r['roomID'] == data['roomID']:
-            #print(r)
             userList = r['userList']
             userList.append({"username":data['username'],"sid":request.sid})
             r.update(userList=userList)
             roomInfo(data['roomID'])
-            roomList(True)
+            #roomList(True)
             break
 
 
-@socketio.on('roomList')
-def roomList(broadcast):
-    #print(broadcast)
-    roomList = list()
-    for r in db.mdb.get_collection('room').find():
-        room = dict()
-        room['roomID'] = r['roomID']
-        room['userList'] = r['userList']
-        roomList.append(room)
-    emit('roomList', roomList, broadcast=broadcast)
+# @socketio.on('roomList')
+# def roomList(broadcast):
+#     #print(broadcast)
+#     roomList = list()
+#     for r in db.mdb.get_collection('room').find():
+#         room = dict()
+#         room['roomID'] = r['roomID']
+#         room['userList'] = r['userList']
+#         roomList.append(room)
+#     emit('roomList', roomList, broadcast=broadcast)
 
 
 @socketio.on('roomInfo')
 def roomInfo(roomID):
     print("find roominfo: ",roomID)
-    r = db.mdb.find_room({"roomID": roomID})
-    #print(r['roomID'])
-    #print(r['userList'])
-    d = dict()
-    d['roomID'] = r['roomID']
-    d['userList'] = r['userList']
-    roomInfo = list()
-    roomInfo.append(d)
-    emit('roomInfo', roomInfo)
+    data = json.dumps(db.mdb.find_room({"roomID": roomID}), default=json_util.default)
+    emit('roomInfo', data)
 
 
 if __name__ == '__main__':

@@ -1,7 +1,5 @@
 $(document).ready(function () {
 
-    var server = "http://192.168.1.8:5000/";
-
     document.addEventListener('init', function (event) {
         var page = event.target;
 
@@ -11,36 +9,54 @@ $(document).ready(function () {
                 window.location.href = "../index.html";
             }
 
-            var socket = io.connect(server);
-
             $("#signOutBtn").click(function () {
                 window.localStorage.clear();
-                socket.emit('doDisconnect');
                 window.location.href = "../index.html";
             });
 
             $("#createRoomBtn").click(function () {
-                socket.emit('doDisconnect');
                 window.location.href = "room.html";
             });
 
-            socket.emit('roomList', JSON.stringify(false));
-            socket.on('roomList', function (message) {
-                console.log(message);
-                if(message.length==0) {
-                    $("#roomList").innerHTML = "No room";
-                } else {
-                    $("#roomList").empty();
-                    for (var i = 0; i < message.length; i++) {
-                        var roomID = message[i].roomID;
-                        $("#roomList").append('<ons-card id="card'+roomID+'"><div><div style="display: inline">Room ID: '+roomID+'</div><div style="display: inline;float: right">Player: '+message[i].userList.length+'</div></div></ons-card>');
-                        $("#card"+roomID).on('click', function(){
-                            socket.emit('doDisconnect');
-                            window.location.href = "room.html?roomID="+roomID;
-                        });
+            var loading = false;
+
+            function getRoom(){
+                $.ajax({
+                    url: server + "room",
+                    method: 'GET',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        loading = true;
+                    },
+                    success: function (response) {
+                        if (response.data.length === 0) {
+                            document.getElementById("roomList").innerHTML = "No room";
+                        } else {
+                            $("#roomList").empty();
+                            for (var i = 0; i < response.data.length; i++) {
+                                var room = JSON.parse(response.data[i]);
+                                var roomID = room.roomID;
+                                $("#roomList").append('<ons-card name="'+roomID+'" class="room"><div><div style="display: inline">Room ID: ' + roomID + '</div><div style="display: inline;float: right">Player: ' + room.userList.length + '</div></div></ons-card>');
+                            }
+                            $(".room").on('click', function () {
+                                window.location.href = "room.html?roomID=" + $(this).attr('name');
+                            });
+                        }
+                        loading = false;
+                    },
+                    error: function (XML, status, err) {
+                        console.log(err);
+                        loading = false;
                     }
+                });
+            }
+
+            getRoom();
+            setInterval(function(){
+                if(!loading) {
+                    getRoom();
                 }
-            });
+            },5000);
 
             window.fn = {};
 
